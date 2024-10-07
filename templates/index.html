@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistant de soutien pour le cancer du sein</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+        body {
+            background-color: #FFF0F5;
+            font-family: 'Montserrat', sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .ribbon {
+            width: 150px;
+            height: 150px;
+            overflow: hidden;
+            position: absolute;
+            top: -10px;
+            left: -10px;
+        }
+
+        .ribbon::before,
+        .ribbon::after {
+            position: absolute;
+            z-index: -1;
+            content: '';
+            display: block;
+            border: 5px solid #FF1493;
+        }
+
+        .ribbon span {
+            position: absolute;
+            display: block;
+            width: 225px;
+            padding: 15px 0;
+            background-color: #FF1493;
+            box-shadow: 0 5px 10px rgba(0,0,0,.1);
+            color: #fff;
+            font-size: 1rem;
+            text-shadow: 0 1px 1px rgba(0,0,0,.2);
+            text-transform: uppercase;
+            text-align: center;
+            left: -25px;
+            top: 30px;
+            transform: rotate(-45deg);
+        }
+
+        .title {
+            color: #FF1493;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #action-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .action-button {
+            background-color: #FFC0CB;
+            color: #FF1493;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-button:hover {
+            background-color: #FFB6C1;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-button i {
+            margin-right: 8px;
+        }
+
+        #chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 2px solid #FFB6C1;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #FFEFF5;
+        }
+
+        #user-input {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        #user-input input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 2px solid #FF69B4;
+            border-radius: 25px 0 0 25px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        #user-input input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.3);
+        }
+
+        #user-input button {
+            background-color: #FF69B4;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 0 25px 25px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        #user-input button:hover {
+            background-color: #FF1493;
+            transform: translateY(-2px);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background-color: #E6F3FF;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .assistant-message {
+            background-color: #FFF0F5;
+            align-self: flex-start;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .modal h2 {
+            color: #FF1493;
+            margin-bottom: 15px;
+        }
+
+        .stage-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .stage-buttons button, #governorate-select {
+            background-color: #FFC0CB;
+            color: #FF1493;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .stage-buttons button:hover, #governorate-select:hover {
+            background-color: #FFB6C1;
+            transform: translateY(-2px);
+        }
+
+        #governorate-select {
+            width: 100%;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 1rem;
+        }
+        .title-container {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .title {
+            font-size: 3rem;
+            color: #FF69B4;
+            margin: 0;
+            padding: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .title::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            background-color: #FFF;
+            border-radius: 50%;
+            z-index: -1;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.3);
+        }
+        
+        .title i {
+            font-size: 0.8em;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #FF1493;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="ribbon"><span>Soutien & Espoir</span></div>
+        <div class="title-container">
+            <h1 id="mr-white" class="title">
+                Mr White
+                <i class="fas fa-hand-holding-heart"></i>
+            </h1>
+            <p class="subtitle">Votre compagnon de soutien virtuel</p>
+        </div>
+        <div id="action-buttons">
+            <button class="action-button" onclick="handleAction('motivation')">
+                <i class="fas fa-heart"></i> Pensée motivante
+            </button>
+            <button class="action-button" onclick="showModal('stage-modal')">
+                <i class="fas fa-list-ul"></i> Recommandations
+            </button>
+            <button class="action-button" onclick="showModal('governorate-modal')">
+                <i class="fas fa-user-md"></i> Trouver un psychologue
+            </button>
+            <button class="action-button" onclick="handleAction('coping-strategy')">
+                <i class="fas fa-lightbulb"></i> Stratégie d'adaptation
+            </button>
+            <button class="action-button" onclick="handleAction('relaxation-exercise')">
+                <i class="fas fa-spa"></i> Exercice de relaxation
+            </button>
+            <button class="action-button" onclick="handleAction('chat')">
+                <i class="fas fa-comments"></i> Discuter
+            </button>
+        </div>
+        <div id="chat-messages"></div>
+        <div id="user-input">
+            <input type="text" id="user-message" placeholder="Tapez votre message ici...">
+            <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Envoyer</button>
+        </div>
+    </div>
+
+    <!-- Modal pour le stade du cancer -->
+    <div id="stage-modal" class="modal">
+        <div class="modal-content">
+            <h2>Stade du cancer</h2>
+            <p>À quel stade de cancer du sein êtes-vous ?</p>
+            <div class="stage-buttons">
+                <button onclick="setStage(1)">Stade 1</button>
+                <button onclick="setStage(2)">Stade 2</button>
+                <button onclick="setStage(3)">Stade 3</button>
+                <button onclick="setStage(4)">Stade 4</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour le gouvernorat -->
+    <div id="governorate-modal" class="modal">
+        <div class="modal-content">
+            <h2>Votre gouvernorat</h2>
+            <p>Dans quel gouvernorat résidez-vous ?</p>
+            <select id="governorate-select" onchange="setGovernorate()">
+                <option value="">Choisissez votre gouvernorat</option>
+                <option value="Tunis">Tunis</option>
+                <option value="Sfax">Sfax</option>
+                <option value="Sousse">Sousse</option>
+                <!-- Ajoutez d'autres gouvernorats ici -->
+            </select>
+        </div>
+    </div>
+
+    <script>
+        let stage = null;
+        let governorate = null;
+
+        function addMessage(message, isUser) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = isUser ? 'message user-message' : 'message assistant-message';
+            messageElement.innerHTML = (isUser ? '<strong>Vous:</strong> ' : '<strong>Assistant:</strong> ') + message;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById('user-message');
+            const message = userInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                userInput.value = '';
+                await handleAction('chat', message);
+            }
+        }
+
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function setStage(selectedStage) {
+            stage = selectedStage;
+            hideModal('stage-modal');
+            handleAction('recommendation');
+        }
+
+        function setGovernorate() {
+            const select = document.getElementById('governorate-select');
+            governorate = select.value;
+            if (governorate) {
+                hideModal('governorate-modal');
+                handleAction('psychologist');
+            }
+        }
+
+        async function handleAction(action, message = '') {
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        message: message,
+                        stage: stage,
+                        governorate: governorate
+                    }),
+                });
+                const data = await response.json();
+                addMessage(data.response, false);
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage("Désolé, une erreur s'est produite.", false);
+            }
+        }
+
+        // Initialisation du chat
+        addMessage("Bonjour, je suis votre assistant virtuel de soutien pour le cancer du sein. Je suis là pour vous écouter, vous guider et vous soutenir à chaque étape de votre parcours. Comment puis-je vous aider aujourd'hui ?", false);
+    </script>
+</body>
+</html>
